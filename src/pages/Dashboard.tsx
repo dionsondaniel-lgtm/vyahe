@@ -22,7 +22,6 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [selectedPage, setSelectedPage] = useState("dashboard");
   const [unreadCount, setUnreadCount] = useState(0);
-  // Modal types: 'terms', 'privacy', or 'install'
   const [modalType, setModalType] = useState<"terms" | "privacy" | "install" | null>(null);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
 
@@ -32,6 +31,7 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
       if (!user) return onLogout();
       setAuthUser(user);
 
+      // Use correct lowercase table name
       const { data, error } = await supabase
         .from("vyahe_ridercustomer_users")
         .select("*")
@@ -39,7 +39,6 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
         .single();
 
       if (error) {
-        console.error("Error fetching profile:", error);
         if (error.code === 'PGRST116') {
           setShowProfileSetup(true);
           setLoadingProfile(false);
@@ -112,7 +111,6 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
         </main>
       </div>
 
-      {/* Universal Modal Handler */}
       {modalType && (
         <TermsModal
           isOpen={!!modalType}

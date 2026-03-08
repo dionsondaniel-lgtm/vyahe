@@ -17,11 +17,12 @@ export default function Chat({ orderId, currentUser, otherUser, onClose }: ChatP
 
   useEffect(() => {
     fetchMessages();
+    // Use lowercase table names
     const subscription = supabase
       .channel("messages")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "VYAHE_messages" },
+        { event: "INSERT", schema: "public", table: "vyahe_messages" },
         (payload: any) => {
           const newMsg = payload.new;
           if (newMsg.order_id === orderId) {
@@ -41,8 +42,9 @@ export default function Chat({ orderId, currentUser, otherUser, onClose }: ChatP
   }, [messages]);
 
   const fetchMessages = async () => {
+    // Use lowercase table names
     const { data, error } = await supabase
-      .from("VYAHE_messages")
+      .from("vyahe_messages")
       .select("*")
       .eq("order_id", orderId)
       .order("created_at", { ascending: true });
@@ -54,7 +56,8 @@ export default function Chat({ orderId, currentUser, otherUser, onClose }: ChatP
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    const { error } = await supabase.from("VYAHE_messages").insert([
+    // Use lowercase table names
+    const { error } = await supabase.from("vyahe_messages").insert([
       {
         order_id: orderId,
         sender_id: currentUser.id,
@@ -74,7 +77,6 @@ export default function Chat({ orderId, currentUser, otherUser, onClose }: ChatP
 
   return (
     <div className="fixed bottom-4 right-4 w-80 md:w-96 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50 overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300">
-      {/* Header */}
       <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex justify-between items-center">
         <div>
           <h3 className="font-bold">{otherUser.name}</h3>
@@ -85,7 +87,6 @@ export default function Chat({ orderId, currentUser, otherUser, onClose }: ChatP
         </button>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
         {messages.length === 0 && (
           <p className="text-center text-gray-400 text-sm mt-10">No messages yet. Say hi!</p>
@@ -112,7 +113,6 @@ export default function Chat({ orderId, currentUser, otherUser, onClose }: ChatP
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <form onSubmit={sendMessage} className="p-3 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2">
         <input
           type="text"

@@ -12,37 +12,40 @@ export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Safety check: if user logs in but table is empty, try to fill it
-  const ensureUserProfile = async (user: any) => {
-    if (!user) return;
+  // Helper to ensure profile exists without blocking indefinitely
+  const ensureUserProfile = async (authUser: any) => {
+    try {
+      // Use correct lowercase table name
+      const { data, error } = await supabase
+        .from("vyahe_ridercustomer_users")
+        .select("id")
+        .eq("id", authUser.id)
+        .maybeSingle();
 
-    // Use correct table name
-    const { data, error } = await supabase
-      .from("vyahe_ridercustomer_users")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (!data) {
-      const { full_name, name, phone, role } = user.user_metadata || {};
-      const userName = full_name || name;
-      
-      if (userName && role) {
-        await supabase
-          .from("vyahe_ridercustomer_users")
-          .insert([{
-            id: user.id,
-            name: userName,
-            email: user.email,
-            phone: phone,
-            role: role,
-            is_online: false
-          }]);
+      if (!data) {
+        const { full_name, name, phone, role } = authUser.user_metadata || {};
+        const userName = full_name || name || authUser.email?.split('@')[0];
+        
+        if (role) {
+          await supabase
+            .from("vyahe_ridercustomer_users")
+            .insert([{
+              id: authUser.id,
+              name: userName,
+              email: authUser.email,
+              phone: phone || "",
+              role: role,
+              is_online: false
+            }]);
+        }
       }
+    } catch (e) {
+      console.warn("Profile check skipped due to error:", e);
     }
   };
 
   useEffect(() => {
+    // Theme setup
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
       setDarkMode(true);
@@ -52,28 +55,38 @@ export default function App() {
       document.documentElement.classList.remove("dark");
     }
 
-    const checkSession = async () => {
+    const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // 1. Get Session from local storage (fast)
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+
         if (session?.user) {
-          await ensureUserProfile(session.user);
+          // 2. If user exists, try to sync profile but don't block UI forever
+          // We wrap the DB call in a timeout race too
+          const profilePromise = ensureUserProfile(session.user);
+          const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3000)); // 3s max for profile check
+          
+          await Promise.race([profilePromise, timeoutPromise]);
+          
           setUser(session.user as any);
-        } else {
-          setUser(null);
         }
       } catch (err) {
-        console.error("Auth init error:", err);
+        console.error("Auth initialization error:", err);
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        await ensureUserProfile(session.user);
         setUser(session.user as any);
+        // Run profile check in background
+        ensureUserProfile(session.user);
       } else {
         setUser(null);
       }
@@ -106,17 +119,24 @@ export default function App() {
   };
 
   const handleAuthSuccess = async (u: any) => {
-    await ensureUserProfile(u);
     setUser(u);
+    await ensureUserProfile(u);
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-12 w-12 bg-blue-500 rounded-full mb-4"></div>
           <p className="text-lg font-light tracking-widest">CONNECTING TO VYAHE...</p>
         </div>
+        {/* Fail-safe button if it gets stuck */}
+        <button 
+          onClick={() => setLoading(false)}
+          className="mt-8 text-xs text-gray-500 hover:text-white underline"
+        >
+          Taking too long? Skip loading
+        </button>
       </div>
     );
   }
