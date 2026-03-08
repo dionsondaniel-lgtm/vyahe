@@ -1,11 +1,11 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { FiX, FiShield, FiFileText } from "react-icons/fi";
+import { FiX, FiShield, FiFileText, FiSmartphone, FiShare, FiSettings } from "react-icons/fi";
 
 interface TermsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: "terms" | "privacy";
+  type: "terms" | "privacy" | "install";
 }
 
 export default function TermsModal({ isOpen, onClose, type }: TermsModalProps) {
@@ -14,8 +14,8 @@ export default function TermsModal({ isOpen, onClose, type }: TermsModalProps) {
   const content = {
     terms: {
       title: "Terms and Conditions",
-      icon: <span className="w-6 h-6 text-blue-500 flex items-center justify-center"><FiFileText size={24} /></span>,
-      text: (
+      icon: <span className="text-blue-500"><FiFileText size={24} /></span>,
+      body: (
         <div className="space-y-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
           <p><strong>1. Introduction</strong><br/>Welcome to VYAHE. By using our app, you agree to these terms.</p>
           <p><strong>2. Service Description</strong><br/>VYAHE connects customers with riders for delivery services. We are a platform, not a logistics provider.</p>
@@ -28,8 +28,8 @@ export default function TermsModal({ isOpen, onClose, type }: TermsModalProps) {
     },
     privacy: {
       title: "Privacy Policy",
-      icon: <span className="w-6 h-6 text-green-500 flex items-center justify-center"><FiShield size={24} /></span>,
-      text: (
+      icon: <span className="text-green-500"><FiShield size={24} /></span>,
+      body: (
         <div className="space-y-4 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
           <p><strong>1. Data Collection</strong><br/>We collect your name, phone number, email, and location data to facilitate deliveries.</p>
           <p><strong>2. Data Usage</strong><br/>Your data is used to match you with riders/customers and improve our service. We do not sell your data.</p>
@@ -38,10 +38,48 @@ export default function TermsModal({ isOpen, onClose, type }: TermsModalProps) {
           <p><strong>5. User Rights</strong><br/>You have the right to request deletion of your data by contacting support.</p>
         </div>
       )
+    },
+    install: {
+      title: "Install VYAHE App",
+      icon: <span className="text-purple-500"><FiSmartphone size={24} /></span>,
+      body: (
+        <div className="space-y-6">
+          <div className="flex flex-col items-center text-center">
+            <div className="p-4 bg-blue-100 dark:bg-blue-900/20 rounded-full mb-4 text-blue-600">
+              <FiSmartphone size={32} />
+            </div>
+            <p className="text-slate-600 dark:text-slate-300 mb-4">
+              Add VYAHE to your home screen for quick access and a full-screen experience.
+            </p>
+          </div>
+
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="font-bold mb-2 flex items-center gap-2 dark:text-white text-sm">
+              <span className="text-blue-500"><FiShare size={16} /></span> iOS (iPhone/iPad)
+            </h4>
+            <ol className="list-decimal pl-5 text-sm text-slate-600 dark:text-slate-400 space-y-1">
+              <li>Tap the <strong>Share</strong> button in Safari's menu bar.</li>
+              <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+              <li>Tap <strong>Add</strong> in the top right corner.</li>
+            </ol>
+          </div>
+
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="font-bold mb-2 flex items-center gap-2 dark:text-white text-sm">
+              <span className="text-green-500"><FiSettings size={16} /></span> Android (Chrome)
+            </h4>
+            <ol className="list-decimal pl-5 text-sm text-slate-600 dark:text-slate-400 space-y-1">
+              <li>Tap the <strong>Three Dots</strong> menu in the browser.</li>
+              <li>Tap <strong>Install App</strong> or <strong>Add to Home Screen</strong>.</li>
+              <li>Confirm by tapping <strong>Add</strong>.</li>
+            </ol>
+          </div>
+        </div>
+      )
     }
   };
 
-  const { title, icon, text } = content[type];
+  const { title, icon, body } = content[type];
 
   return (
     <AnimatePresence>
@@ -68,7 +106,7 @@ export default function TermsModal({ isOpen, onClose, type }: TermsModalProps) {
           </div>
           
           <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            {text}
+            {body}
           </div>
 
           <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end">
@@ -76,7 +114,7 @@ export default function TermsModal({ isOpen, onClose, type }: TermsModalProps) {
               onClick={onClose}
               className="px-6 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors shadow-lg shadow-gray-500/20"
             >
-              I Understand
+              {type === 'install' ? 'Got it' : 'I Understand'}
             </button>
           </div>
         </motion.div>

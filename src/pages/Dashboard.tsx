@@ -22,7 +22,8 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [selectedPage, setSelectedPage] = useState("dashboard");
   const [unreadCount, setUnreadCount] = useState(0);
-  const [modalType, setModalType] = useState<"terms" | "privacy" | null>(null);
+  // Modal types: 'terms', 'privacy', or 'install'
+  const [modalType, setModalType] = useState<"terms" | "privacy" | "install" | null>(null);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
 
   useEffect(() => {
@@ -31,7 +32,6 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
       if (!user) return onLogout();
       setAuthUser(user);
 
-      // IMPORTANT: Use the exact table name 'vyahe_ridercustomer_users'
       const { data, error } = await supabase
         .from("vyahe_ridercustomer_users")
         .select("*")
@@ -40,8 +40,6 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
 
       if (error) {
         console.error("Error fetching profile:", error);
-        // If row not found (PGRST116), it means registration insert failed
-        // Show the manual setup screen
         if (error.code === 'PGRST116') {
           setShowProfileSetup(true);
           setLoadingProfile(false);
@@ -65,7 +63,6 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
     );
   }
 
-  // If Auth exists but Profile missing, show setup screen
   if (showProfileSetup && authUser) {
     return <CompleteProfileSetup user={authUser} onComplete={() => window.location.reload()} />;
   }
@@ -80,6 +77,7 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
         onSelectPage={setSelectedPage}
         onShowTerms={() => setModalType("terms")}
         onShowPrivacy={() => setModalType("privacy")}
+        onShowInstall={() => setModalType("install")}
       />
 
       <div className="flex flex-col flex-1 min-w-0">
@@ -93,7 +91,7 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
           onRefresh={() => window.location.reload()}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 relative">
+        <main className="flex-1 overflow-y-auto p-0 md:p-6 relative">
           {profile.role === "Customer" && (
             <CustomerDashboard
               selectedPage={selectedPage}
@@ -114,6 +112,7 @@ export default function Dashboard({ onLogout, darkMode, toggleDarkMode }: Dashbo
         </main>
       </div>
 
+      {/* Universal Modal Handler */}
       {modalType && (
         <TermsModal
           isOpen={!!modalType}

@@ -1,4 +1,4 @@
-import { FiHome, FiList, FiTruck, FiShield, FiUsers } from "react-icons/fi";
+import { FiHome, FiList, FiTruck, FiUsers, FiDownloadCloud } from "react-icons/fi";
 
 interface SidebarProps {
   role: string;
@@ -6,9 +6,10 @@ interface SidebarProps {
   onSelectPage: (page: string) => void;
   onShowTerms: () => void;
   onShowPrivacy: () => void;
+  onShowInstall: () => void;
 }
 
-export default function Sidebar({ role, onSelectPage, selectedPage, onShowTerms, onShowPrivacy }: SidebarProps) {
+export default function Sidebar({ role, onSelectPage, selectedPage, onShowTerms, onShowPrivacy, onShowInstall }: SidebarProps) {
   const menuItems = (() => {
     if (role === "Rider") {
       return [
@@ -31,9 +32,9 @@ export default function Sidebar({ role, onSelectPage, selectedPage, onShowTerms,
   })();
 
   return (
-    <aside className="hidden md:flex w-64 bg-white dark:bg-gray-800 min-h-screen border-r dark:border-gray-700 flex-col shadow-lg z-20">
+    <aside className="hidden md:flex w-64 bg-white dark:bg-gray-800 min-h-screen border-r dark:border-gray-700 flex-col shadow-lg z-20 sticky top-0">
       <div className="p-6 border-b dark:border-gray-700 flex items-center gap-3">
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md">
           V
         </div>
         <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
@@ -58,13 +59,23 @@ export default function Sidebar({ role, onSelectPage, selectedPage, onShowTerms,
         ))}
       </nav>
 
-      <div className="p-4 border-t dark:border-gray-700 text-xs text-center text-gray-400 space-y-2">
-        <div className="flex justify-center gap-3">
-          <button onClick={onShowTerms} className="hover:text-blue-500 transition-colors">Terms</button>
-          <span>&bull;</span>
-          <button onClick={onShowPrivacy} className="hover:text-blue-500 transition-colors">Privacy</button>
+      <div className="p-4 border-t dark:border-gray-700 space-y-4">
+        {/* Install Button */}
+        <button 
+          onClick={onShowInstall}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors font-medium text-sm"
+        >
+          <FiDownloadCloud size={18} /> Install App
+        </button>
+
+        <div className="text-xs text-center text-gray-400 space-y-2">
+          <div className="flex justify-center gap-3">
+            <button onClick={onShowTerms} className="hover:text-blue-500 transition-colors">Terms</button>
+            <span>&bull;</span>
+            <button onClick={onShowPrivacy} className="hover:text-blue-500 transition-colors">Privacy</button>
+          </div>
+          <p>&copy; 2026 VYAHE Inc.</p>
         </div>
-        <p>&copy; 2026 VYAHE Inc.</p>
       </div>
     </aside>
   );
